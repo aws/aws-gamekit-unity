@@ -1,0 +1,28 @@
+{
+    "name": "AWS.GameKit.Editor.UnitTests",
+    "rootNamespace": "AWS.GameKit.Editor.UnitTests",
+    "references": [
+        "UnityEngine.TestRunner",
+        "UnityEditor.TestRunner",
+        "AWS.GameKit.Editor",
+        "AWS.GameKit.Runtime",
+        "AWS.GameKit.Runtime.UnitTests",
+        "AWS.GameKit.Common"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "nunit.framework.dll",
+        "Moq.dll"
+    ],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "UNITY_INCLUDE_TESTS"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

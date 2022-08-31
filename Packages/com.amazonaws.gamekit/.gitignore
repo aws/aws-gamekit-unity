@@ -1,0 +1,9 @@
+# AWS GameKit .gitignore
+#
+# The following files should not be tracked in your version control system:
+
+# Editor state information:
+Editor/WindowState/*.asset*
+
+# Client specific settings
+*AwsGameKitPersistentSettings.json*

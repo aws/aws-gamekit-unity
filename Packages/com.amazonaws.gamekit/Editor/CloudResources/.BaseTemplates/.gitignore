@@ -1,0 +1,19 @@
+### Python ###
+# Virtual environment
+venv/
+
+# Compiled bytecode
+*.pyc
+**__pycache__
+
+
+
+### PyCharm IDE ***
+# Configuration repository
+.idea
+
+
+
+### Unity ###
+# Asset meta data
+*.meta

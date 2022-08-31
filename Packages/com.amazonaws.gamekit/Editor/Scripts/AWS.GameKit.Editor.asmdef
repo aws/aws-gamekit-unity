@@ -1,0 +1,20 @@
+{
+    "name": "AWS.GameKit.Editor",
+    "rootNamespace": "AWS.GameKit.Editor",
+    "references": [
+        "AWS.GameKit.Runtime",
+        "AWS.GameKit.Common",
+        "AWS.GameKit.Samples.Runtime.Common"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
