@@ -107,6 +107,18 @@ namespace AWS.GameKit.Runtime.Core
         }
 
         /// <summary>
+        /// Public OnApplicationQuit method for the GameKitManager, this is intended to be called from a Monbehavior OnApplicationQuit.
+        /// This can be used to notify features that a game instance has been quit.
+        ///
+        /// OnApplicationQuit is called in both Standalone and Editor mode unlike Dispose which is only called in Standalone.
+        /// </summary>
+        public void OnApplicationQuit()
+        {
+            // Notify all features that the application has been quit
+            _features.ForEach(feature => feature.OnApplicationQuit());
+        }
+
+        /// <summary>
         /// Public update method for the GameKitManager, this is intended to only be called during a Monobehavior update or editor update.
         /// </summary>
         public void Update()

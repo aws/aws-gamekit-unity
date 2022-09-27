@@ -1,6 +1,6 @@
 {
   "name": "com.amazonaws.gamekit",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "displayName": "AWS GameKit",
   "description": "Use the AWS GameKit package to configure and deploy backend cloud services for your game, and connect to it from your frontend game code using custom API libraries.\n\nTo get started, open the AWS GameKit menu from the toolbar and choose Settings to set up your cloud project and explore each game feature.",
   "unity": "2021.3",

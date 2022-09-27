@@ -136,7 +136,7 @@ namespace AWS.GameKit.Editor.Core
         {
             return _accountCredentials;
         }
-
+        
         /// <summary>
         /// Bootstrap account by creating appropriate S3 buckets.
         /// </summary>
@@ -147,7 +147,7 @@ namespace AWS.GameKit.Editor.Core
         {
             _coreWrapper.AccountInstanceRelease();
             _coreWrapper.AccountInstanceCreateWithRootPaths(_accountInfo, _accountCredentials, Paths.ASSETS_INSTANCE_FILES_FULL_PATH, Paths.PACKAGES_BASE_TEMPLATES_FULL_PATH, Logging.LogCb);
-
+            
             uint result = _coreWrapper.AccountInstanceBootstrap();
 
             if (result != GameKitErrors.GAMEKIT_SUCCESS)

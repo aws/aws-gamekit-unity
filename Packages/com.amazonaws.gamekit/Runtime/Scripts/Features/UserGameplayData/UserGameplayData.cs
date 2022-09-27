@@ -89,9 +89,11 @@ namespace AWS.GameKit.Runtime.Features.GameKitUserGameplayData
         }
 
         /// <summary>
-        /// Used to cleanup User Gameplay Data functionality when the application is closing.
+        /// Used to trigger any functionality that should happen when the applications quits, before OnDispose is called.
+        ///
+        /// NotifyApplicationQuit is from both the Editor and Standalone whereas DestroyFeature() is only called during runtime.
         /// </summary>
-        protected override void DestroyFeature()
+        protected override void NotifyApplicationQuit()
         {
 #if !UNITY_IOS  // For iOS this is handled NotifyPause
             OfflineSupportCleanup();

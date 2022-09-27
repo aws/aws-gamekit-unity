@@ -95,6 +95,7 @@ namespace AWS.GameKit.Editor
                 GUILayout.FlexibleSpace();
                 if (EditorGUILayoutElements.Button("Ok", _confirmationText.ToLower() == "yes"))
                 {
+                    // Todo only enable when text box says yes
                     DeleteCallback();
                     this.Close();
                 }

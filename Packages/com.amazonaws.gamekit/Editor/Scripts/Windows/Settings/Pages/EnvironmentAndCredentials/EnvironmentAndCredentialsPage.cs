@@ -43,8 +43,7 @@ namespace AWS.GameKit.Editor.Windows.Settings.Pages.EnvironmentAndCredentials
         private static readonly string CHANGE_ENVIRONMENT_WARNING = L10n.Tr("You can switch to another environment, change the AWS Region for deployments, or enter new AWS credentials. " +
                                                                     "After changing settings, you must choose Submit. Are you sure that you want to change environment settings?" +
                                                                     "\n\nWARNING: This action will result in any local Achievement configuration data being lost, " + 
-                                                                    "please upload any local data to the cloud by clicking on \"Save data\" on the Achievements Configure Data tab." +
-                                                                    "\n\nNOTE: After submitting new environment settings, you must restart Unity Editor.");
+                                                                    "please upload any local data to the cloud by clicking on \"Save data\" on the Achievements Configure Data tab.");
 
         private static readonly string EXISTING_CREDENTIALS_INFO = L10n.Tr("Set credentials for this new environment. Use existing values (carried over from the previous environment) or enter new ones.");
 
@@ -64,6 +63,7 @@ namespace AWS.GameKit.Editor.Windows.Settings.Pages.EnvironmentAndCredentials
         private const string AWS_ACCOUNT_ID_LOADING = "Loading...";
         private static readonly string AWS_ACCOUNT_INVALID_PAIR = L10n.Tr("The AWS credentials entered are not a valid pair.");
         private static readonly string AWS_ACCOUNT_NOT_VALIDATED = L10n.Tr("The user credentials you provided cannot be validated.\nPlease enter a valid access key pair or create a new one using AWS IAM.");
+        private static readonly string AWS_ACCOUNT_HAS_TOO_MANY_BUCKETS = L10n.Tr("The AWS account provided contains too many S3 buckets. \nPlease delete any unused S3 buckets or request an increase through the AWS console.");
         private static readonly string INTERNET_CONNECTIVITY_ISSUE = L10n.Tr("Internet is not reachable. Restore internet and reopen the Project Settings window to work with AWS GameKit features.");
 
         public override string DisplayName => "Environment & Credentials";
@@ -546,8 +546,8 @@ namespace AWS.GameKit.Editor.Windows.Settings.Pages.EnvironmentAndCredentials
         {
             if (Application.internetReachability == NetworkReachability.NotReachable)
             {
-                EditorUtility.DisplayDialog(L10n.Tr("No Internet Connection"), "Must have an internet connection to configure AWS GameKit Settings, restart settings window after connection is re-established.", "Ok");
-                Debug.LogWarning("No internet connection, won't be able to customize AWS GameKit Settings until connection is re-established, and settings window is reopened.");
+                EditorUtility.DisplayDialog(L10n.Tr("No Internet Connection"), "Must have internet connection to configure AWS GameKit Settings. Close and re-open the settings window after connection is established.", "Ok");
+                Debug.LogWarning("No internet connection, you won't be able to customize AWS GameKit Settings until connection is established and settings window is re-opened.");
                 return;
             }
 
@@ -1100,6 +1100,11 @@ namespace AWS.GameKit.Editor.Windows.Settings.Pages.EnvironmentAndCredentials
 
                 SetValidCredentialsSubmitted(true);
                 _isNewProject = false;
+            }
+            else if (result == GameKitErrors.GAMEKIT_ERROR_BOOTSTRAP_TOO_MANY_BUCKETS)
+            {
+                _credentialPairErrorMessage = AWS_ACCOUNT_HAS_TOO_MANY_BUCKETS;
+                Logging.LogError(L10n.Tr($"The AWS account provided has reached its limit on S3 buckets. Please navigate to the AWS console to delete unnecessary buckets or request an increase: error {result}"));
             }
             else
             {

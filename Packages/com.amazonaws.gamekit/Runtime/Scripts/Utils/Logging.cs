@@ -86,16 +86,16 @@ namespace AWS.GameKit.Runtime.Utils
 
         static Logging()
         {
-            // Default logging level to error when outside editor, override by changing log level within game.
-#if !UNITY_EDITOR
-            MinimumUnityLoggingLevel = Level.ERROR;
-#endif
-#if DEBUG
-            MinimumUnityLoggingLevel = Level.INFO;
-#endif
             IsUnityLoggingEnabled = AwsGameKitPersistentSettings.LoadBool(nameof(IsUnityLoggingEnabled), DEFAULT_IS_UNITY_LOGGING_ENABLED);
             MinimumUnityLoggingLevel = (Level)AwsGameKitPersistentSettings.LoadInt(nameof(MinimumUnityLoggingLevel), (int)DEFAULT_MINIMUM_UNITY_LOGGING_LEVEL);
             MaxLogQueueSize = AwsGameKitPersistentSettings.LoadInt(nameof(MaxLogQueueSize), DEFAULT_MAX_LOG_QUEUE_SIZE);
+
+            // Default logging level to error when outside editor unless using DEBUG symbols, override by changing log level within game. 
+#if !UNITY_EDITOR && DEBUG
+            MinimumUnityLoggingLevel = Level.INFO;
+#elif !UNITY_EDITOR
+            MinimumUnityLoggingLevel = Level.ERROR;
+#endif
         }
 
         public static void ClearLogQueue()

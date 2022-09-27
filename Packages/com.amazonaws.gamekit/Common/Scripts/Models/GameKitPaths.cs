@@ -28,6 +28,7 @@ namespace AWS.GameKit.Common
         public virtual string INSTANCE_FILES_FOLDER_NAME => "InstanceFiles";
         public virtual string WINDOWS_STATE_FOLDER_NAME => "WindowState";
         public virtual string GAMEKIT_ART_FOLDER => "Art";
+        public virtual string GAMEKIT_ICONS_FOLDER => "icons";
         public virtual string PLUGINS_FOLDER_NAME => "Plugins";
         public virtual string ANDROID_FOLDER_NAME => "Android";
         public virtual string GAMEKIT_CONFIG_ANDROID_LIB_FOLDER_NAME => "GameKitConfig.androidlib";
@@ -59,6 +60,7 @@ namespace AWS.GameKit.Common
         public virtual string ASSETS_SETTINGS_WINDOW_STATE_RELATIVE_PATH => Path(ASSETS_WINDOW_STATE_RELATIVE_PATH, SETTINGS_WINDOW_STATE_FILE_NAME);
         public virtual string ASSETS_GIT_IGNORE_RELATIVE_PATH => Path(ASSETS_RELATIVE_PATH, GIT_IGNORE_FILE_NAME);
         public virtual string ASSETS_GAMEKIT_ART_PATH => Path(ASSETS_EDITOR_RELATIVE_PATH, GAMEKIT_ART_FOLDER);
+        public virtual string ASSETS_GAMEKIT_ICONS_PATH => Path(ASSETS_GAMEKIT_ART_PATH, GAMEKIT_ICONS_FOLDER);
         public virtual string ASSETS_GAMEKIT_ANDROID_PATH => Path(new string[] { ASSETS_RELATIVE_PATH, PLUGINS_FOLDER_NAME, ANDROID_FOLDER_NAME});
         public virtual string ASSETS_GAMEKIT_RAW_RELATIVE_PATH => Path(new string[] { ASSETS_GAMEKIT_ANDROID_PATH, GAMEKIT_CONFIG_ANDROID_LIB_FOLDER_NAME, GAMEKIT_CONFIG_ASSETS_FOLDER_NAME, RAW_FOLDER_NAME });
         public virtual string ASSETS_GAMEKIT_RAW_CERT_RELATIVE_PATH => Path(new string[] { ASSETS_GAMEKIT_ANDROID_PATH, GAMEKIT_CONFIG_ANDROID_LIB_FOLDER_NAME, GAMEKIT_CONFIG_ASSETS_FOLDER_NAME, RAW_FOLDER_NAME, CERT_FILE_NAME });

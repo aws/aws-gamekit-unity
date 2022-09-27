@@ -38,7 +38,8 @@ Use this game feature to implement an autosave system as well for explicit saves
 save points.
 
 ## Installing AWS GameKit
-To install this package, follow the instructions in the
+1. Download the latest  tarball `.tgz` file from the [releases page](https://github.com/aws/aws-gamekit-unity/releases) 
+2. Add it to a Unity project using the Unity Package Manager. To do so, follow the instructions in the
 [Unity Package Manager documentation](https://docs.unity3d.com/Packages/com.unity.package-manager-ui@latest/index.html).
 
 To learn more about Unity Packages, the official documentation can be found [here](https://docs.unity3d.com/Manual/Packages.html).

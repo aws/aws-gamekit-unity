@@ -47,6 +47,9 @@ namespace AWS.GameKit.Editor.Windows.Settings.Pages.Achievements
         private const string TOOLTIP_ACHIEVEMENTS_MUST_SUCCESSFULLY_DEPLOY_SUFFIX = "The feature's last deployment ended in an error.";
         private const string TOOLTIP_ACHIEVEMENTS_MUST_BE_CREATED = "The Achievements feature must be created";
 
+        private const string LOCKED_ICON_TYPE = "locked";
+        private const string UNLOCKED_ICON_TYPE = "unlocked";
+
         private const float BUTTON_MINIMUM_SIZE = 50.0f;
 
         private readonly string TEMPLATE_FILE_ERROR = $"Error opening {TEMPLATE_FILE_NAME} file";
@@ -75,6 +78,7 @@ namespace AWS.GameKit.Editor.Windows.Settings.Pages.Achievements
         private SerializedProperty _serializedProperty;
         private SerializedProperty _localAchievementsSerializedProperty;
         private GameKitEditorManager _gameKitEditorManager;
+        private IFileManager _fileManager;
 
         public void Initialize(SettingsDependencyContainer dependencies, SerializedProperty serializedProperty)
         {
@@ -84,6 +88,7 @@ namespace AWS.GameKit.Editor.Windows.Settings.Pages.Achievements
             _serializedProperty = serializedProperty;
             _localAchievementsSerializedProperty = _serializedProperty.FindPropertyRelative($"{nameof(_localAchievements)}");
             _gameKitEditorManager = dependencies.GameKitEditorManager;
+            _fileManager = dependencies.FileManager;
 
             // State
             _localAchievements ??= new SerializablePropertyOrderedDictionary<string, AchievementWidget>();
@@ -116,6 +121,11 @@ namespace AWS.GameKit.Editor.Windows.Settings.Pages.Achievements
                 EditorGUILayoutElements.Description(L10n.Tr("Manage your game's achievement definitions and sync them to the backend."), indentationLevel: 0);
 
                 EditorGUILayoutElements.SectionDivider();
+
+                if (_isShowingCloudSyncErrorBanner)
+                {
+                    
+                }
 
                 using (new EditorGUI.DisabledScope(ShouldDisableGUI()))
                 {
@@ -297,7 +307,7 @@ namespace AWS.GameKit.Editor.Windows.Settings.Pages.Achievements
         private void DrawImportButton()
         {
             bool isEnabled = AreLocalActionButtonsEnabled(
-                enabledTooltip: L10n.Tr("Replace your local achievements with new ones imported from a JSON file."),
+                enabledTooltip: L10n.Tr("Add achievements from a JSON file to your local achievements, overwriting any achievements with the same ID."),
                 actionDescription: L10n.Tr("achievements can be imported from a JSON file"),
                 out string tooltip);
 
@@ -524,11 +534,16 @@ namespace AWS.GameKit.Editor.Windows.Settings.Pages.Achievements
                 return;
             }
 
-            Logging.LogInfo(L10n.Tr($"{listOfAchievements.Count} achievement(s) imported from {file}, replacing {_localAchievements.Count} existing achievement(s)."));
+            // Add or update achievements
+            uint newAchievements = 0;
+            uint updatedAchievements = 0;
+            uint restoredAchievements = 0;
+            listOfAchievements.ForEach(a => AddLocalAchievement(a, ref newAchievements, ref updatedAchievements, ref restoredAchievements));
 
-            // replace all local achievements with the imported achievements
-            _localAchievements.Clear();
-            listOfAchievements.ForEach(a => AddLocalAchievement(a));
+            Logging.LogInfo(L10n.Tr($"{listOfAchievements.Count} achievement(s) imported from {file}, adding {newAchievements} new achievement(s), overwriting {updatedAchievements} existing achievement(s), and restored {restoredAchievements} achievement(s)."));
+
+            // update the sync status
+            SynchronizeAchievementsWithCloud(false);
         }
 
         /// <summary>
@@ -748,8 +763,8 @@ namespace AWS.GameKit.Editor.Windows.Settings.Pages.Achievements
                                     {
                                         localAchievement.SyncStatus = SyncStatus.Synchronized;
 
-                                        DownloadIcons(lockedIconUrlSuffix, cloudAchievements[i].LockedIcon, localAchievement);
-                                        DownloadIcons(unlockedIconUrlSuffix, cloudAchievements[i].UnlockedIcon, localAchievement);
+                                        DownloadIcons(lockedIconUrlSuffix, cloudAchievements[i].LockedIcon, LOCKED_ICON_TYPE, localAchievement);
+                                        DownloadIcons(unlockedIconUrlSuffix, cloudAchievements[i].UnlockedIcon, UNLOCKED_ICON_TYPE, localAchievement);
                                     }
                                     else
                                     {
@@ -764,8 +779,8 @@ namespace AWS.GameKit.Editor.Windows.Settings.Pages.Achievements
                                     AchievementWidget localAchievement = cloudAchievements[i];
                                     localAchievement.SyncStatus = SyncStatus.Synchronized;
 
-                                    DownloadIcons(lockedIconUrlSuffix, localAchievement.IconPathLocked, localAchievement);
-                                    DownloadIcons(unlockedIconUrlSuffix, localAchievement.IconPathUnlocked, localAchievement);
+                                    DownloadIcons(lockedIconUrlSuffix, localAchievement.IconPathLocked, LOCKED_ICON_TYPE, localAchievement);
+                                    DownloadIcons(unlockedIconUrlSuffix, localAchievement.IconPathUnlocked, UNLOCKED_ICON_TYPE, localAchievement);
 
                                     AddLocalAchievement(localAchievement);
                                 }
@@ -827,15 +842,47 @@ namespace AWS.GameKit.Editor.Windows.Settings.Pages.Achievements
         /// Download achievement icons.
         /// </summary>
         /// <param name="iconS3Key">S3 key of the icon.</param>
-        /// <param name="downloadPath">local download path of the icon.</param>
-        private async void DownloadIcons(string iconS3Key, string downloadPath, AchievementWidget localAchievement)
+        /// <param name="downloadPath">Local download path of the icon.</param>
+        /// <param name="iconType">The icon type refers to its purpose, is it locked or unlocked, etc.</param>
+        /// <param name="localAchievement">The widget that the icon is rendered with.</param>
+        private async void DownloadIcons(string iconS3Key, string downloadPath, string iconType, AchievementWidget localAchievement)
         {
             if (!string.IsNullOrEmpty(iconS3Key) && !string.IsNullOrEmpty(downloadPath))
             {
+                // Delete the current local copy of the icon (and its meta file). The new icon will have a different and unique name.
+                string[] files = _fileManager.ListFiles(GameKitPaths.Get().ASSETS_GAMEKIT_ICONS_PATH, $"{localAchievement.Id}_{iconType}*");
+                if (files.Length > 0)
+                {
+                    foreach(string file in files)
+                    {
+                        try
+                        {
+                            _fileManager.DeleteFile(file);
+                        }
+                        catch (Exception e)
+                        {
+                            // If we fail to delete a old file on this pass, another attempt will be made the next time this function is called.
+                            Logging.LogWarning($"Unable to delete previous icon, {file}, for achievement Id: {localAchievement.Id}, exception: {e}");
+                        }
+                    }
+                }
+
                 string fullUrl = _achievementIconsBaseUrl + iconS3Key;
                 UnityWebRequest request = new UnityWebRequest(fullUrl);
                 request.method = UnityWebRequest.kHttpVerbGET;
-                DownloadHandlerFile fileHandler = new DownloadHandlerFile(downloadPath);
+
+                DownloadHandlerFile fileHandler;
+                try
+                {
+                    fileHandler = new DownloadHandlerFile(downloadPath);
+                }
+                catch (Exception e)
+                {
+                    Logging.LogException($"Icon {fullUrl} download failed", e);
+
+                    return;
+                }
+                
                 fileHandler.removeFileOnAbort = true;
                 request.downloadHandler = fileHandler;
                 request.timeout = 120; //seconds
@@ -899,9 +946,42 @@ namespace AWS.GameKit.Editor.Windows.Settings.Pages.Achievements
         #endregion
 
         #region Helpers
+        private void AddLocalAchievement(AchievementWidget achievement, ref uint newAchievementRunningCount, ref uint updatedAchievementsRunningCount, ref uint restoredAchievementsRunningCount)
+        {
+            // Check if the achievement already exists
+            if (_localAchievements.ContainsKey(achievement.Id))
+            {
+                if (_localAchievements.GetValue(achievement.Id).IsMarkedForDeletion == true)
+                {
+                    // Restore the achievement to the local list by changing its delete flag back to false.
+                    _localAchievements.GetValue(achievement.Id).IsMarkedForDeletion = false;
+
+                    ++restoredAchievementsRunningCount;
+                }
+
+                if (!AchievementWidget.AreSame(_localAchievements.GetValue(achievement.Id), achievement))
+                {
+                    // copy the values in the new achievement into the current one
+                    _localAchievements.GetValue(achievement.Id).CopyNonUniqueValues(achievement);
+
+                    ++updatedAchievementsRunningCount;
+                }
+            }
+            else
+            {
+                // Add as a new achievement
+                _localAchievements.Add(achievement.Id, achievement);
+
+                ++newAchievementRunningCount;
+            }
+        }
+
         private void AddLocalAchievement(AchievementWidget achievement)
         {
-            _localAchievements.Add(achievement.Id, achievement);
+            uint throwAwayNewCount = 0;
+            uint throwAwayUpdateCount = 0;
+            uint throwAwayRestoredCount = 0;
+            AddLocalAchievement(achievement, ref throwAwayNewCount, ref throwAwayUpdateCount, ref throwAwayRestoredCount);
         }
 
         private string ExportListOfAchievements(List<Achievement> listOfAchievements, string saveFilePanelTitle, string defaultFileName)

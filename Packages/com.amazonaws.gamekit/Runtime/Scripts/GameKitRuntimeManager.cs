@@ -108,6 +108,8 @@ namespace AWS.GameKit.Runtime
 
         private void OnApplicationQuit()
         {
+            Singleton<GameKitManager>.Get().OnApplicationQuit();
+
 #if !UNITY_EDITOR
             // In editor mode don't dispose GameKit manager. 
             // In non-editor execution environments and while we are still on the main thread, 

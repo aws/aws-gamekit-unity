@@ -22,6 +22,7 @@ namespace AWS.GameKit.Editor.Windows.Settings
     [Serializable]
     public class UserLoginWidget : IDrawable
     {
+        private Action _logoutDelegate;
 
         private IIdentityProvider _identity;
         private UserInfo _userInfo;
@@ -35,11 +36,12 @@ namespace AWS.GameKit.Editor.Windows.Settings
 
         private bool _isRequestInProgress;
 
-        public void Initialize(SettingsDependencyContainer dependencies, SerializedProperty serializedProperty)
+        public void Initialize(SettingsDependencyContainer dependencies, SerializedProperty serializedProperty, Action logoutDelegateMethod)
         {
             _identity = dependencies.Identity;
             _userInfo = dependencies.UserInfo;
             _serializedProperty = serializedProperty;
+            _logoutDelegate = logoutDelegateMethod;
 
             _createUserLink = new LinkWidget(L10n.Tr("Register a new player in the Identity testing tab."), OpenIdentityTestingTab, new LinkWidget.Options { Alignment = LinkWidget.Alignment.Left, ShouldDrawExternalIcon = false });
         }
@@ -178,6 +180,9 @@ namespace AWS.GameKit.Editor.Windows.Settings
 
                 _userInfo.UserName = string.Empty;
                 _userInfo.UserId = string.Empty;
+
+                // Used to clean up a feature after logout
+                _logoutDelegate.Invoke();
             });
         }
     }

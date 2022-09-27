@@ -34,13 +34,13 @@ namespace AWS.GameKit.Editor.Windows.Settings.Pages.UserGameplayData
         private static readonly string SET_CLIENT_SETTINGS_OVERVIEW = L10n.Tr("Client settings can optionally be set before the retry thread is started. If SetClientSettings() is not called default values will be used. To learn more about the following fields, view their tool tips below. " +
                                                                               "The values of this slider are suggestions, however, the API will take any valid uint.");
 
-        private static readonly string PERSIST_TO_CACHE_OVERVIEW = L10n.Tr("The Persist to Cache method should be used to save the current queue of API calls that have not been successfully made to disk when the player exits the program. " +
-                                                                    "The optimal file extension for the cache file is '.dat' and should be saved within the 'Application.datapath' directory or any place a player can access at runtime.");
+        private static readonly string PERSIST_TO_CACHE_OVERVIEW = L10n.Tr("The Persist to Cache method should be used to save the current queue of API calls, that have not been successfully made, to disk when the player exits the program. " +
+                                                                    "The optimal file extension for the cache file is '.dat' and should be saved within the 'Application.datapath' directory or any directory a player can access at runtime.");
 
         private static readonly string LOAD_FROM_CACHE_OVERVIEW = L10n.Tr("The Load from Cache method should be used to load any failed calls that a user may have had during their last session into the queue that will be retried with the retry thread.");
 
-        private static readonly string DROP_CACHED_EVENTS_OVERVIEW = L10n.Tr("Dropping all Cached Events will clear out the current Queue of calls that have not been successfully made due to a connectivity issue. " +
-                                                                             "This will not effect any cache files that have been saved to disk with PersistToCache().");
+        private static readonly string DROP_CACHED_EVENTS_OVERVIEW = L10n.Tr("Dropping all Cached Events will clear the current queue of unmade calls that were loading into the queue using LoadFromCache(). " +
+                                                                             "This will not effect any existing cache files that have been saved to disk with PersistToCache(), only calls that have already been loaded to the queue from a cache.");
 
         private static readonly IList<string> RETRY_STATEGY_OPTIONS = new List<string> { L10n.Tr("Exponential Backoff"), L10n.Tr("Constant Interval") };
 
@@ -122,6 +122,13 @@ namespace AWS.GameKit.Editor.Windows.Settings.Pages.UserGameplayData
             _persistToCacheExampleUI.OnGUI();
             _loadFromCacheExampleUI.OnGUI();
             _dropAllCachedEventsExampleUI.OnGUI();
+        }
+
+        public override void OnLogout()
+        {
+            _retryThreadExampleUI.ForceStopRetryThread();
+            _networkStatusExampleUI.NetworkStatusChangeResult = null; // In NetworkStatusExampleUI, null is treated as a user just logged in
+            _cacheProcessedExampleUI.CacheProcessedResult = null; // In CacheProcessedExampleUI, null is treated as a user just logged in
         }
 
         #region User Gameplay Data API Calls 
@@ -508,6 +515,7 @@ namespace AWS.GameKit.Editor.Windows.Settings.Pages.UserGameplayData
             Debug.Log("Calling UserGameplayData.StopRetryBackgroundThread()");
 
             _userGameplayData.StopRetryBackgroundThread();
+            _cacheProcessedExampleUI.CacheProcessedResult = null; // After the user stops the retry thread they can retry another cache file
         }
 
         private void CallSetNetworkChangeDelegate()
@@ -549,6 +557,7 @@ namespace AWS.GameKit.Editor.Windows.Settings.Pages.UserGameplayData
 
             _userGameplayData.SetClientSettings(clientSettings, () =>
             {
+                // The result code below is not displayed in the examples UI but setting the result code marks the call as completed
                 _setClientSettingsExampleUI.ResultCode = GameKitErrors.GAMEKIT_SUCCESS;
                 Debug.Log($"UserGameplayData client settings set successfully.");
             });
@@ -582,7 +591,12 @@ namespace AWS.GameKit.Editor.Windows.Settings.Pages.UserGameplayData
         {
             Debug.Log("Calling UserGameplayData.DropAllCachedEvents()");
 
-            _userGameplayData.DropAllCachedEvents(() => { });
+            _userGameplayData.DropAllCachedEvents(() =>
+            {
+                // The result code below is not displayed in the examples UI but setting the result code marks the call as completed
+                _dropAllCachedEventsExampleUI.ResultCode = GameKitErrors.GAMEKIT_SUCCESS;
+                Debug.Log($"All operations that were loading from cache dropped successfully from the retry thread.");
+            });
         }
 
 
@@ -607,6 +621,17 @@ namespace AWS.GameKit.Editor.Windows.Settings.Pages.UserGameplayData
                 _startRetryThreadAction = startRetryThreadAction;
                 _stopRetryThreadAction = stopRetryThreadAction;
                 _serializedProperty = serializedProperty;
+            }
+
+            public void ForceStopRetryThread()
+            {
+                // Should be called when the user logs out to ensure the retry thread can be started again by a new user
+
+                if (_isRetryThreadStarted)
+                {
+                    _isRetryThreadStarted = false;
+                    _stopRetryThreadAction();
+                }
             }
 
             public void OnGUI()

@@ -2,9 +2,11 @@
 This repository contains modifiable source code for the AWS GameKit package for Unity in the form of an [Embedded Package](https://docs.unity3d.com/Manual/CustomPackages.html#EmbedMe). If you don’t need to modify the AWS GameKit package, you can download the latest tarball `.tgz` file from the [releases page](https://github.com/aws/aws-gamekit-unity/releases) and add it to a Unity project using the Unity Package Manager.
 To modify this package we recommend cloning this repo and opening it as a blank Unity project. After making your changes, follow the Packaging steps below to generate a custom plugin package, which you can then add to your Unity projects.
 
-See: [Packages/com.amazonaws.gamekit/README.md](Packages/com.amazonaws.gamekit/README.md)
+## Installing the AWS GameKit Unity Package
+See [Packages/com.amazonaws.gamekit/README.md](Packages/com.amazonaws.gamekit/README.md) for instructions on installing the
+Package Manager package.
 
-## Dev Setup
+## Setup for making changes to the package
 
 ### Clone this repository
 ```
@@ -82,7 +84,3 @@ python export_unitypackage.py UNITY_APPLICATION_FULL_PATH
 Where `UNITY_APPLICATION_FULL_PATH` is like:
 * Windows: `"C:\Program Files\Unity\Hub\Editor\2021.3.4f1\Editor\Unity.exe"`
 * Mac: `/Applications/Unity/Hub/Editor/2021.3.4f1/Unity.app/Contents/MacOS/Unity`
-
-## Installing Package Manager Package
-See [Packages/com.amazonaws.gamekit/README.md](Packages/com.amazonaws.gamekit/README.md) for instructions on installing the
-Package Manager package after it has been created.

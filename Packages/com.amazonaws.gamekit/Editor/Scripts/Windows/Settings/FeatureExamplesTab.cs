@@ -54,7 +54,12 @@ namespace AWS.GameKit.Editor.Windows.Settings
             _featureDeploymentOrchestrator = dependencies.FeatureDeploymentOrchestrator;
             _userInfo = dependencies.UserInfo;
 
-            _userLoginWidget.Initialize(dependencies, serializedProperty.FindPropertyRelative(nameof(_userLoginWidget)));
+            _userLoginWidget.Initialize(dependencies, serializedProperty.FindPropertyRelative(nameof(_userLoginWidget)), OnLogout);
+        }
+
+        public virtual void OnLogout()
+        {
+            // No-op should be overwritten by implementing class if needed
         }
 
         public void OnGUI()

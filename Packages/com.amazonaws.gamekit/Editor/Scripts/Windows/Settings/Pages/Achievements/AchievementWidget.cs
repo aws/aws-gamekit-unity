@@ -11,6 +11,7 @@ using UnityEditor;
 using UnityEngine;
 
 // GameKit
+using AWS.GameKit.Common;
 using AWS.GameKit.Editor.AchievementsAdmin;
 using AWS.GameKit.Editor.GUILayoutExtensions;
 using AWS.GameKit.Editor.FileStructure;
@@ -53,6 +54,8 @@ namespace AWS.GameKit.Editor.Windows.Settings.Pages.Achievements
     [Serializable]
     public class AchievementWidget : IHasSerializedPropertyOfSelf
     {
+        private static IFileManager _fileManager = new FileManager();
+
         public SerializedProperty SerializedPropertyOfSelf { get; set; }
 
         // UI Slider Min/Max Values
@@ -185,6 +188,29 @@ namespace AWS.GameKit.Editor.Windows.Settings.Pages.Achievements
         }
 
         /// <summary>
+        /// Copies the values which are safe to copy from another widget into this widget.
+        /// </summary>
+        /// <param name="achievementWidget">Widget to copy from.</param>
+        public void CopyNonUniqueValues(AchievementWidget achievementWidget)
+        {
+            Title = achievementWidget.Title;
+            DescriptionLocked = achievementWidget.DescriptionLocked;
+            DescriptionUnlocked = achievementWidget.DescriptionUnlocked;
+            IconPathLocked = achievementWidget.IconPathLocked;
+            IconPathUnlocked = achievementWidget.IconPathUnlocked;
+            NumberOfStepsToEarn = achievementWidget.NumberOfStepsToEarn;
+            Points = achievementWidget.Points;
+            SortOrder = achievementWidget.SortOrder;
+            IsInvisibleToPlayers = achievementWidget.IsInvisibleToPlayers;
+            CanBeAchieved = achievementWidget.CanBeAchieved;
+            SyncStatus = achievementWidget.SyncStatus;
+            IsMarkedForDeletion = achievementWidget.IsMarkedForDeletion;
+
+            // The icons will need to be reloaded
+            ClearTextures();
+        }
+
+        /// <summary>
         /// Public method for collapsing an expanded widget.
         /// </summary>
         public void CollapseWidget()
@@ -245,8 +271,7 @@ namespace AWS.GameKit.Editor.Windows.Settings.Pages.Achievements
                 {
                     return;
                 }
-
-
+                
                 using (new EditorGUILayout.VerticalScope(SettingsGUIStyles.Achievements.Expanded))
                 {
                     UpdateSyncStatus(Id, PropertyField(nameof(Id), L10n.Tr("ID (primary key)"), string.Empty, isEnabled: false));
@@ -371,7 +396,7 @@ namespace AWS.GameKit.Editor.Windows.Settings.Pages.Achievements
 
             if (currentImage == null)
             {
-                if (File.Exists(imagePath))
+                if (_fileManager.FileExists(imagePath))
                 {
                     if (!IsFileAvailable(imagePath))
                     {
@@ -379,7 +404,7 @@ namespace AWS.GameKit.Editor.Windows.Settings.Pages.Achievements
                         return null;
                     }
 
-                    byte[] imageBytes = File.ReadAllBytes(imagePath);
+                    byte[] imageBytes = _fileManager.ReadAllBytes(imagePath);
 
                     Texture2D newImage = new Texture2D(1, 1);
                     if (!ImageConversion.LoadImage(newImage, imageBytes, false))

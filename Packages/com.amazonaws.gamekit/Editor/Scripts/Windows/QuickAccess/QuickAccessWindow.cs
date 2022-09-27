@@ -96,6 +96,7 @@ namespace AWS.GameKit.Editor.Windows.QuickAccess
 
         private void DrawEnvironmentAndCredentials()
         {
+            
         }
 
         private void DrawFeatureRows()

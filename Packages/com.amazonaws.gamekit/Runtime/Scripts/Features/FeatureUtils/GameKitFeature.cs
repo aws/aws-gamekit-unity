@@ -76,6 +76,17 @@ namespace AWS.GameKit.Runtime.FeatureUtils
         }
 
         /// <summary>
+        /// Called by the GameKitManager to notify features the game has been quit. Called when <see cref="GameKitManager.OnApplicationQuit"/> is called.
+        /// </summary>
+        public virtual void OnApplicationQuit()
+        {
+            if (_isReady)
+            {
+                NotifyApplicationQuit();
+            }
+        }
+
+        /// <summary>
         /// Called by the GameKitManager to update any requirements of the feature. Called when <see cref="GameKitManager.Update"/> is called.
         /// </summary>
         public virtual void Update()
@@ -206,6 +217,17 @@ namespace AWS.GameKit.Runtime.FeatureUtils
         }
 
         /// <summary>
+        /// NotifyApplicationQuit is called whenever the application is quit. NotifyApplicationQuit is called in both Editor and Standalone unlike
+        /// DestroyFeature which is only called when running on a standalone build.  
+        ///
+        /// This method does nothing by default. It is not necessary to call `base.NotifyPause()` when overriding this method.
+        /// </summary>
+        protected virtual void NotifyApplicationQuit()
+        {
+            // default empty NotifyApplicationQuit() call
+        }
+
+        /// <summary>
         /// UpdateFeature is called during the Update state and is an optional call for the child feature.
         /// 
         /// This method does nothing by default. It is not necessary to call `base.UpdateFeature()` when overriding this method.
@@ -216,7 +238,8 @@ namespace AWS.GameKit.Runtime.FeatureUtils
         }
 
         /// <summary>
-        /// DestroyFeature is called during the OnDestroy state and is an optional call for the child feature.
+        /// DestroyFeature is called during the OnDestroy state and is an optional call for the child feature. Note DestroyFeature is not called from the Editor.
+        /// Use NotifyApplicationQuit() for cleanup that should be done for both Editor and Standalone.
         /// 
         /// This method does nothing by default. It is not necessary to call `base.DestroyFeature()` when overriding this method.
         /// </summary>

@@ -13,6 +13,7 @@ namespace AWS.GameKit.Runtime.Models
         DependenciesMustBeCreated,
         DependenciesMustBeDeleted,
         DependenciesStatusIsInvalid,
-        CredentialsInvalid
+        CredentialsInvalid,
+        MainStackNotReady
     }
 }

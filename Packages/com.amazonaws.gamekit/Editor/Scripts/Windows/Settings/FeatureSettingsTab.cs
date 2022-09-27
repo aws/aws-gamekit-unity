@@ -360,7 +360,15 @@ namespace AWS.GameKit.Editor.Windows.Settings
                     return "The status of this feature cannot be determined, this action will be disabled until status is retrievable.";
 
                 case DeploymentActionBlockedReason.OngoingDeployments:
-                    return "This feature, or one of it's dependent features is being deployed, action is disabled until deployment has finished.";
+                    if (!result.BlockingFeatures.Contains(this.FeatureType))
+                    {
+                        return AppendBlockingFeatures("This action is disabled while the following features are updating: ", result);
+                    }
+
+                    return "This action is disabled while any update is in progress for this feature.";
+
+                case DeploymentActionBlockedReason.MainStackNotReady:
+                    return "This action is disabled while the Main stack is updating and not in a ready state";
 
                 default:
                     return "Action is disabled for an unknown reason.";

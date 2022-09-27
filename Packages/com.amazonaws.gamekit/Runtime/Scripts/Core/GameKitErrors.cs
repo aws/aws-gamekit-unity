@@ -40,6 +40,7 @@ namespace AWS.GameKit.Runtime.Core
         public const uint GAMEKIT_ERROR_BOOTSTRAP_INVALID_REGION_CODE = 0x1F7;
         public const uint GAMEKIT_ERROR_BOOTSTRAP_MISSING_PLUGIN_ROOT = 0x1F8;
         public const uint GAMEKIT_ERROR_BOOTSTRAP_REGION_CODE_CONVERSION_FAILED = 0x1F9;
+        public const uint GAMEKIT_ERROR_BOOTSTRAP_TOO_MANY_BUCKETS = 0x1FA;
         public const uint GAMEKIT_ERROR_FUNCTIONS_PATH_NOT_FOUND = 0x3E9;
         public const uint GAMEKIT_ERROR_CLOUDFORMATION_PATH_NOT_FOUND = 0x3EA;
         public const uint GAMEKIT_ERROR_FUNCTION_ZIP_INIT_FAILED = 0x3EB;
